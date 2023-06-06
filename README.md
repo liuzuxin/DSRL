@@ -7,43 +7,36 @@
 <div align="center">
 
   <a>![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-brightgreen.svg)</a>
-  [![Documentation Status](https://img.shields.io/readthedocs/fsrl?logo=readthedocs)](https://fsrl.readthedocs.io)
-  [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](#license)
-  [![CodeCov](https://codecov.io/github/liuzuxin/fsrl/branch/main/graph/badge.svg?token=BU27LTW9F3)](https://codecov.io/github/liuzuxin/fsrl)
-  [![Tests](https://github.com/liuzuxin/fsrl/actions/workflows/test.yml/badge.svg)](https://github.com/liuzuxin/fsrl/actions/workflows/test.yml)
+  [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](#license)
+  <!-- [![Documentation Status](https://img.shields.io/readthedocs/fsrl?logo=readthedocs)](https://fsrl.readthedocs.io) -->
+  <!-- [![CodeCov](https://codecov.io/github/liuzuxin/fsrl/branch/main/graph/badge.svg?token=BU27LTW9F3)](https://codecov.io/github/liuzuxin/fsrl)
+  [![Tests](https://github.com/liuzuxin/fsrl/actions/workflows/test.yml/badge.svg)](https://github.com/liuzuxin/fsrl/actions/workflows/test.yml) -->
   <!-- [![CodeCov](https://img.shields.io/codecov/c/github/liuzuxin/fsrl/main?logo=codecov)](https://app.codecov.io/gh/liuzuxin/fsrl) -->
   <!-- [![tests](https://img.shields.io/github/actions/workflow/status/liuzuxin/fsrl/test.yml?label=tests&logo=github)](https://github.com/liuzuxin/fsrl/tree/HEAD/tests) -->
   <!-- [![PyPI](https://img.shields.io/pypi/v/fsrl?logo=pypi)](https://pypi.org/project/fsrl) -->
   <!-- [![GitHub Repo Stars](https://img.shields.io/github/stars/liuzuxin/fsrl?color=brightgreen&logo=github)](https://github.com/liuzuxin/fsrl/stargazers)
   [![Downloads](https://static.pepy.tech/personalized-badge/fsrl?period=total&left_color=grey&right_color=blue&left_text=downloads)](https://pepy.tech/project/fsrl) -->
-   <!-- [![License](https://img.shields.io/github/license/liuzuxin/fsrl?label=license)](#license) -->
 
 </div>
 
 ---
 
-DSRL (Dataset for Offline Safe Reinforcement Learning) is an open-source benchmark for offline safe reinforcement learning.
 
-## Structure
-The structure of this repo is as follows:
-```
-├── algorithms  # offline safe RL algorithms
-│   ├── algo1
-│   │   ├── configs  # configs for algo1
-│   │   ├── script  # .py files to train or evaluate algo1
-│   │   ├── log  # store training process or evaluation results
-│   ├── ...
-├── Bullet-Safety-Gym  # experiment environment
-├── safe-rl-lib  # safe RL expert libraries
-├── dsrl  
-│   ├── bullet_safety_gym  # a wrapper implementation for offline safe RL
-│   ├── collect_dataset  # collect offline dataset based-on safe-rl-lib
-│   │   ├── train_xxx.py  # use sac or ppo expert to collect offline data
-│   │   ├── create_dataset.py  # process the saved offline data to d4rl format
-│   │   ├── stitcb_dataset.py # stitch multiple datasets together
-```
+**DSRL (Datasets for Safe Reinforcement Learning)** provides a rich collection of datasets specifically designed for offline Safe Reinforcement Learning (RL). Created with the objective of fostering progress in offline safe RL research, DSRL bridges a crucial gap in the availability of safety-centric public benchmarks and datasets. 
+
+DSRL provides:
+
+1. **Diverse datasets:** 38 datasets across different safe RL environments and difficulty levels in SafetyGymnasium, BulletSafetyGym, and MetaDrive, all prepared with safety considerations.
+2. **Consistent API with D4RL:** For easy use and evaluation of offline learning methods.
+3. **Data post-processing filters:** Allowing alteration of data density, noise level, and reward distributions to simulate various data collection conditions.
+4. **Expertly crafted safe policies:** Useful for the generation of high-quality datasets.
+
+This package is a part of a comprehensive benchmarking suite that includes [FSRL](https://github.com/liuzuxin/fsrl) and [OSRL](https://github.com/liuzuxin/osrl) and aims to promote advancements in the development and evaluation of safe learning algorithms.
+
+To learn more, please visit our [project website](http://www.offline-saferl.org) or refer to our [documentation](./docs).
 
 ## Installation
+
 Pull the repo and install:
 ```
 git clone https://github.com/liuzuxin/DSRL.git

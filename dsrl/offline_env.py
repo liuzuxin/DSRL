@@ -2,19 +2,16 @@
 
 import os
 import urllib.request
-import warnings
 from collections import defaultdict
-from typing import Any, Callable, Dict, Optional, Tuple
-from numpy.random import Generator, PCG64
+from random import sample
+from typing import Tuple, Union
 
 # import gym
 import gymnasium as gym
-from gym.utils import colorize
 import h5py
-from tqdm import tqdm
 import numpy as np
-from typing import Union
-from osrl.common.dataset import filter_trajectory
+from numpy.random import PCG64, Generator
+from tqdm import tqdm
 
 
 def set_dataset_path(path):
@@ -23,7 +20,9 @@ def set_dataset_path(path):
     os.makedirs(path, exist_ok=True)
 
 
-set_dataset_path(os.environ.get('DSRL_DATASET_DIR', os.path.expanduser('~/.dsrl/datasets')))
+set_dataset_path(
+    os.environ.get('DSRL_DATASET_DIR', os.path.expanduser('~/.dsrl/datasets'))
+)
 
 
 def get_keys(h5file):
@@ -73,6 +72,75 @@ def wrap_env(
     return env
 
 
+def grid_filter(
+    x,
+    y,
+    xmin=-np.inf,
+    xmax=np.inf,
+    ymin=-np.inf,
+    ymax=np.inf,
+    xbins=10,
+    ybins=10,
+    max_num_per_bin=10,
+    min_num_per_bin=1
+):
+    xmin, xmax = max(min(x), xmin), min(max(x), xmax)
+    ymin, ymax = max(min(y), ymin), min(max(y), ymax)
+    xbin_step = (xmax - xmin) / xbins
+    ybin_step = (ymax - ymin) / ybins
+    # the key is x y bin index, the value is a list of indices
+    bin_hashmap = defaultdict(list)
+    for i in range(len(x)):
+        if x[i] < xmin or x[i] > xmax or y[i] < ymin or y[i] > ymax:
+            continue
+        x_bin_idx = (x[i] - xmin) // xbin_step
+        y_bin_idx = (y[i] - ymin) // ybin_step
+        bin_hashmap[(x_bin_idx, y_bin_idx)].append(i)
+    # start filtering
+    indices = []
+    for v in bin_hashmap.values():
+        if len(v) > max_num_per_bin:
+            # random sample max_num_per_bin indices
+            indices += sample(v, max_num_per_bin)
+        elif len(v) <= min_num_per_bin:
+            continue
+        else:
+            indices += v
+    return indices
+
+
+def filter_trajectory(
+    cost,
+    rew,
+    traj,
+    cost_min=-np.inf,
+    cost_max=np.inf,
+    rew_min=-np.inf,
+    rew_max=np.inf,
+    cost_bins=60,
+    rew_bins=50,
+    max_num_per_bin=10,
+    min_num_per_bin=1
+):
+    indices = grid_filter(
+        cost,
+        rew,
+        cost_min,
+        cost_max,
+        rew_min,
+        rew_max,
+        xbins=cost_bins,
+        ybins=rew_bins,
+        max_num_per_bin=max_num_per_bin,
+        min_num_per_bin=min_num_per_bin
+    )
+    cost2, rew2, traj2 = [], [], []
+    for i in indices:
+        cost2.append(cost[i])
+        rew2.append(rew[i])
+        traj2.append(traj[i])
+    return cost2, rew2, traj2, indices
+
 
 class OfflineEnv(gym.Env):
     """
@@ -85,11 +153,15 @@ class OfflineEnv(gym.Env):
         deprecated: If True, will display a warning that the environment is deprecated.
     """
 
-    def __init__(self, max_episode_reward=None,
-                       min_episode_reward=None, 
-                       max_episode_cost=None,
-                       min_episode_cost=None,
-                       dataset_url=None, **kwargs):
+    def __init__(
+        self,
+        max_episode_reward=None,
+        min_episode_reward=None,
+        max_episode_cost=None,
+        min_episode_cost=None,
+        dataset_url=None,
+        **kwargs
+    ):
         super(OfflineEnv, self).__init__(**kwargs)
         self.dataset_url = dataset_url
         self.max_episode_reward = max_episode_reward
@@ -109,7 +181,8 @@ class OfflineEnv(gym.Env):
             (self.min_episode_reward is None) or \
             (self.target_cost is None):
             raise ValueError("Reference score not provided for env")
-        normalized_reward = (reward - self.min_episode_reward) / (self.max_episode_reward - self.min_episode_reward)
+        normalized_reward = (reward - self.min_episode_reward
+                             ) / (self.max_episode_reward - self.min_episode_reward)
         normalized_cost = (cost + self.epsilon) / (self.target_cost + self.epsilon)
         return normalized_reward, normalized_cost
 
@@ -122,7 +195,7 @@ class OfflineEnv(gym.Env):
             if self.dataset_url is None:
                 raise ValueError("Offline env not configured with a dataset URL.")
             h5path = download_dataset_from_url(self.dataset_url)
-       
+
         data_dict = {}
         with h5py.File(h5path, 'r') as dataset_file:
             for k in tqdm(get_keys(dataset_file), desc="load datafile"):
@@ -132,9 +205,10 @@ class OfflineEnv(gym.Env):
                     data_dict[k] = dataset_file[k][()]
 
         # Run a few quick sanity checks
-        for key in ['observations', 'next_observations',
-                    'actions', 'rewards', 'costs',
-                    'terminals', 'timeouts']:
+        for key in [
+            'observations', 'next_observations', 'actions', 'rewards', 'costs',
+            'terminals', 'timeouts'
+        ]:
             assert key in data_dict, 'Dataset is missing key %s' % key
         N_samples = data_dict['observations'].shape[0]
         if self.observation_space.shape is not None:
@@ -147,14 +221,18 @@ class OfflineEnv(gym.Env):
         if data_dict['rewards'].shape == (N_samples, 1):
             data_dict['rewards'] = data_dict['rewards'][:, 0]
         assert data_dict['rewards'].shape == (
-            N_samples, ), 'Reward has wrong shape: %s' % (str(data_dict['rewards'].shape))
+            N_samples,
+        ), 'Reward has wrong shape: %s' % (str(data_dict['rewards'].shape))
         if data_dict['costs'].shape == (N_samples, 1):
             data_dict['costs'] = data_dict['costs'][:, 0]
-        assert data_dict['costs'].shape == (N_samples, ), 'Costs has wrong shape: %s' % (str(data_dict['costs'].shape))
+        assert data_dict['costs'].shape == (
+            N_samples,
+        ), 'Costs has wrong shape: %s' % (str(data_dict['costs'].shape))
         if data_dict['terminals'].shape == (N_samples, 1):
             data_dict['terminals'] = data_dict['terminals'][:, 0]
         assert data_dict['terminals'].shape == (
-            N_samples, ), 'Terminals has wrong shape: %s' % (str(data_dict['rewards'].shape))
+            N_samples,
+        ), 'Terminals has wrong shape: %s' % (str(data_dict['rewards'].shape))
         data_dict["observations"] = data_dict["observations"].astype("float32")
         data_dict["actions"] = data_dict["actions"].astype("float32")
         data_dict["next_observations"] = data_dict["next_observations"].astype("float32")
@@ -162,27 +240,31 @@ class OfflineEnv(gym.Env):
         data_dict["costs"] = data_dict["costs"].astype("float32")
         return data_dict
 
-    def pre_process_data(self,
-                         data_dict: dict, 
-                         outliers_percent: float = None, 
-                         noise_scale: float = None,
-                         inpaint_ranges: Tuple[Tuple[float, float]] = None,
-                         epsilon: float = None,
-                         density: float = 1.0,
-                         cbins: int = 10,
-                         rbins: int = 50,
-                         max_npb: int = 5,
-                         min_npb: int = 2):
+    def pre_process_data(
+        self,
+        data_dict: dict,
+        outliers_percent: float = None,
+        noise_scale: float = None,
+        inpaint_ranges: Tuple[Tuple[float, float]] = None,
+        epsilon: float = None,
+        density: float = 1.0,
+        cbins: int = 10,
+        rbins: int = 50,
+        max_npb: int = 5,
+        min_npb: int = 2
+    ):
         """
         pre-process the data to add outliers and/or gaussian noise and/or inpaint part of the data
         """
 
         # get trajectories
-        done_idx = np.where((data_dict["terminals"] == 1) | (data_dict["timeouts"] == 1))[0]
+        done_idx = np.where(
+            (data_dict["terminals"] == 1) | (data_dict["timeouts"] == 1)
+        )[0]
         # print(done_idx)
         trajs, cost_returns, reward_returns = [], [], []
         for i in range(done_idx.shape[0]):
-            start = 0 if i == 0 else done_idx[i-1] + 1
+            start = 0 if i == 0 else done_idx[i - 1] + 1
             end = done_idx[i] + 1
             cost_return = np.sum(data_dict["costs"][start:end])
             reward_return = np.sum(data_dict["rewards"][start:end])
@@ -195,7 +277,9 @@ class OfflineEnv(gym.Env):
         rmin, rmax = np.min(reward_returns), np.max(reward_returns)
         print(f"rmax = {rmax}, rmin = {rmin}")
         print(f"cmax = {cmax}, cmin = {cmin}")
-        print(f"before filter: traj num = {len(trajs)}, transitions num = {data_dict['observations'].shape[0]}")
+        print(
+            f"before filter: traj num = {len(trajs)}, transitions num = {data_dict['observations'].shape[0]}"
+        )
         if density != 1.0:
             assert density < 1.0, "density should be less than 1.0"
             cmin, cmax = np.min(cost_returns), np.max(cost_returns)
@@ -203,12 +287,18 @@ class OfflineEnv(gym.Env):
             # cbins, rbins = 10, 50
             # max_npb, min_npb = 5, 2
             cost_returns, reward_returns, trajs, indices = filter_trajectory(
-                        cost_returns, reward_returns, trajs,
-                        cost_min=cmin, cost_max=cmax,
-                        rew_min=rmin, rew_max=rmax,
-                        cost_bins=cbins, rew_bins=rbins,
-                        max_num_per_bin=max_npb,
-                        min_num_per_bin=min_npb)
+                cost_returns,
+                reward_returns,
+                trajs,
+                cost_min=cmin,
+                cost_max=cmax,
+                rew_min=rmin,
+                rew_max=rmax,
+                cost_bins=cbins,
+                rew_bins=rbins,
+                max_num_per_bin=max_npb,
+                min_num_per_bin=min_npb
+            )
             # reward_returns = np.array(reward_returns, dtype=np.float64)
             # cost_returns = np.array(cost_returns, dtype=np.float64)
         print(f"after filter: traj num = {len(trajs)}")
@@ -222,11 +312,17 @@ class OfflineEnv(gym.Env):
         if outliers_percent is not None:
             assert self.target_cost is not None, \
             "Please set target cost using env.set_target_cost(target_cost) if you want to add outliers"
-            outliers_num = np.max([int(n_trajs*outliers_percent), 1])
-            mask = np.logical_and(cost_returns >= self.max_episode_cost / 2, 
-                                    reward_returns >= self.max_episode_reward / 2)
-            outliers_idx = self.rng.choice(traj_idx[mask], size=outliers_num, replace=False)
-            outliers_cost_returns = self.rng.choice(np.arange(int(self.target_cost)), size=outliers_num)
+            outliers_num = np.max([int(n_trajs * outliers_percent), 1])
+            mask = np.logical_and(
+                cost_returns >= self.max_episode_cost / 2,
+                reward_returns >= self.max_episode_reward / 2
+            )
+            outliers_idx = self.rng.choice(
+                traj_idx[mask], size=outliers_num, replace=False
+            )
+            outliers_cost_returns = self.rng.choice(
+                np.arange(int(self.target_cost)), size=outliers_num
+            )
             # replace the original risky trajs with outliers
             for i, cost in zip(outliers_idx, outliers_cost_returns):
                 len_traj = trajs[i]["observations"].shape[0]
@@ -241,9 +337,13 @@ class OfflineEnv(gym.Env):
             inpainted_idx = []
             for inpaint_range in inpaint_ranges:
                 cmin, cmax = inpaint_range
-                mask = np.logical_and(cmin <= cost_returns[traj_idx], cost_returns[traj_idx] <= cmax)
+                mask = np.logical_and(
+                    cmin <= cost_returns[traj_idx], cost_returns[traj_idx] <= cmax
+                )
                 inpainted_idx.append(traj_idx[mask])
-                mask = np.logical_or(cost_returns[traj_idx] < cmin, cost_returns[traj_idx] > cmax)
+                mask = np.logical_or(
+                    cost_returns[traj_idx] < cmin, cost_returns[traj_idx] > cmax
+                )
                 traj_idx = traj_idx[mask]
             inpainted_idx = np.array(inpainted_idx)
             # check if outliers are filtered
@@ -255,48 +355,77 @@ class OfflineEnv(gym.Env):
         if epsilon is not None:
             assert self.target_cost is not None, \
             "Please set target cost using env.set_target_cost(target_cost) if you want to change epsilon"
-            # make it more difficult to train by filtering out 
+            # make it more difficult to train by filtering out
             # high reward trajectoris that satisfy target_cost
             if epsilon > 0:
                 safe_idx = np.where(cost_returns <= self.target_cost)[0]
                 ret = np.max(reward_returns[traj_idx[safe_idx]])
-                mask = np.logical_and(reward_returns[traj_idx[safe_idx]] >= ret - epsilon,
-                                      reward_returns[traj_idx[safe_idx]] <= ret)
+                mask = np.logical_and(
+                    reward_returns[traj_idx[safe_idx]] >= ret - epsilon,
+                    reward_returns[traj_idx[safe_idx]] <= ret
+                )
                 eps_reduce_idx = traj_idx[safe_idx[mask]]
                 traj_idx = np.setdiff1d(traj_idx, eps_reduce_idx)
-            # make it easier to train by filtering out 
+            # make it easier to train by filtering out
             # high reward trajectoris that violate target_cost
             if epsilon < 0:
                 risk_idx = np.where(cost_returns > self.target_cost)[0]
                 ret = np.max(reward_returns[traj_idx[risk_idx]])
-                mask = np.logical_and(reward_returns[traj_idx[risk_idx]] >= ret + epsilon,
-                                      reward_returns[traj_idx[risk_idx]] <= ret)
+                mask = np.logical_and(
+                    reward_returns[traj_idx[risk_idx]] >= ret + epsilon,
+                    reward_returns[traj_idx[risk_idx]] <= ret
+                )
                 eps_reduce_idx = traj_idx[risk_idx[mask]]
                 traj_idx = np.setdiff1d(traj_idx, eps_reduce_idx)
 
         import matplotlib.pyplot as plt
         plt.figure()
         fontsize = 18
-        plt.scatter(cost_returns[traj_idx], reward_returns[traj_idx], c='dodgerblue', label='remained data')
+        plt.scatter(
+            cost_returns[traj_idx],
+            reward_returns[traj_idx],
+            c='dodgerblue',
+            label='remained data'
+        )
         if inpaint_ranges is not None:
-            plt.scatter(cost_returns[inpainted_idx], reward_returns[inpainted_idx], c='gray', label='inpainted data')
+            plt.scatter(
+                cost_returns[inpainted_idx],
+                reward_returns[inpainted_idx],
+                c='gray',
+                label='inpainted data'
+            )
         if outliers_percent is not None:
-            plt.scatter(cost_returns[outliers_idx], reward_returns[outliers_idx], c='tomato', label="augmented outliers")
+            plt.scatter(
+                cost_returns[outliers_idx],
+                reward_returns[outliers_idx],
+                c='tomato',
+                label="augmented outliers"
+            )
         if epsilon is not None:
-            plt.scatter(cost_returns[eps_reduce_idx], reward_returns[eps_reduce_idx], c='grey', label="filtered data")
+            plt.scatter(
+                cost_returns[eps_reduce_idx],
+                reward_returns[eps_reduce_idx],
+                c='grey',
+                label="filtered data"
+            )
         if self.target_cost is not None:
             plt.axvline(self.target_cost, linestyle='--', label="cost limit")
         plt.legend(fontsize=fontsize)
         plt.xlabel("Cost return", fontsize=fontsize)
         plt.ylabel("reward return", fontsize=fontsize)
         plt.tight_layout()
-        plt.savefig(f"outliers{outliers_percent}_noise{noise_scale}_inpaint{inpaint_ranges}_epsilon{epsilon}.png")
+        plt.savefig(
+            f"outliers{outliers_percent}_noise{noise_scale}_inpaint{inpaint_ranges}_epsilon{epsilon}.png"
+        )
 
         processed_data_dict = defaultdict(list)
         for k in data_dict.keys():
             for i in traj_idx:
                 processed_data_dict[k].append(trajs[i][k])
-        processed_data_dict = {k: np.concatenate(v) for k, v in processed_data_dict.items()}
+        processed_data_dict = {
+            k: np.concatenate(v)
+            for k, v in processed_data_dict.items()
+        }
 
         # perturbed observations
         if noise_scale is not None:
@@ -325,7 +454,7 @@ class OfflineEnvWrapper(gym.Wrapper, OfflineEnv):
         if self.noise_scale is not None:
             obs += np.random.normal(0, self.noise_scale, obs.shape)
         return obs, info
-    
+
     def set_noise_scale(self, noise_scale):
         self.noise_scale = noise_scale
 
