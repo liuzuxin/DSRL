@@ -83,4 +83,6 @@ Datasets are automatically downloaded to the `~/.dsrl/datasets` directory when `
 - The individual min and max reference returns are stored in `dsrl/infos.py` for reference.
 
 
+## License
 
+All datasets are licensed under the [Creative Commons Attribution 4.0 License (CC BY)](https://creativecommons.org/licenses/by/4.0/), and code is licensed under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0.html).
