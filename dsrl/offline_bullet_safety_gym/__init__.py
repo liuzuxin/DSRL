@@ -2,7 +2,7 @@ from gymnasium.envs.registration import register
 from dsrl import infos
 
 
-for agent in ['Ant', 'Car', 'Drone']:
+for agent in ['Ant', 'Ball', 'Car', 'Drone']:
     for task in ['Run', 'Circle']:
         env_name = agent + task
         register(

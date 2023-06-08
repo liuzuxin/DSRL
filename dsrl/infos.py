@@ -5,8 +5,10 @@ This file holds all URLs and reference scores.
 DATASET_URLS = {# bullet_safety_gym
                 "AntCircle": "http://safeai-dataserver.andrew.cmu.edu:3000/download/SafetyAntCircle-v0-200-5728.hdf5",
                 "AntRun": "http://safeai-dataserver.andrew.cmu.edu:3000/download/SafetyAntRun-v0-150-1816.hdf5",
+                "BallCircle": "http://safeai-dataserver.andrew.cmu.edu:3000/download/SafetyBallCircle-v0-80-886.hdf5",
+                "BallRun": "http://safeai-dataserver.andrew.cmu.edu:3000/download/SafetyBallRun-v0-80-940.hdf5",
                 "CarCircle": "http://safeai-dataserver.andrew.cmu.edu:3000/download/SafetyCarCircle-v0-100-1450.hdf5",
-                "CarRun": "http://safeai-dataserver.andrew.cmu.edu:3000/download/cr_cost_0_40_651.hdf5",
+                "CarRun": "http://safeai-dataserver.andrew.cmu.edu:3000/download/SafetyCarRun-v0-40-651.hdf5",
                 "DroneCircle": "http://safeai-dataserver.andrew.cmu.edu:3000/download/SafetyDroneCircle-v0-100-1923.hdf5",
                 "DroneRun": "http://safeai-dataserver.andrew.cmu.edu:3000/download/SafetyDroneRun-v0-140-1990.hdf5",
                 # safety_gymnasium: Car
@@ -53,6 +55,8 @@ DEFAULT_REWARD_THRESHOLD = {"AntVelocity": 6000.0,
 DEFAULT_MAX_EPISODE_STEPS = {# bullet_safety_gym
                              "AntCircle": 500,
                              "AntRun": 200,
+                             "BallCircle": 200,
+                             "BallRun": 100,
                              "CarCircle": 300,
                              "CarRun": 200,
                              "DroneCircle": 300,
@@ -93,6 +97,8 @@ DEFAULT_MAX_EPISODE_STEPS = {# bullet_safety_gym
 MAX_EPISODE_REWARD = {# bullet_safety_gym
                       "AntCircle": 460.7091979980469,
                       "AntRun": 955.4818725585938, 
+                      "BallCircle": 881.46337890625,
+                      "BallRun": 1327.445556640625,
                       "CarCircle": 534.3060913085938, 
                       "CarRun": 574.6533203125, 
                       "DroneCircle": 996.38916015625, 
@@ -133,6 +139,8 @@ MAX_EPISODE_REWARD = {# bullet_safety_gym
 MIN_EPISODE_REWARD = {# bullet_safety_gym
                       "AntCircle": 0.0177031010389328,
                       "AntRun": 0.001767391717990563, 
+                      "BallCircle": 0.38312244415283203,
+                      "BallRun": 26.339754104614258,
                       "CarCircle": 3.484419822692871, 
                       "CarRun": 204.28726196289062, 
                       "DroneCircle": 207.794189453125, 
@@ -173,6 +181,8 @@ MIN_EPISODE_REWARD = {# bullet_safety_gym
 MAX_EPISODE_COST = {# bullet_safety_gym
                     "AntCircle": 200.0,
                     "AntRun": 150.0, 
+                    "BallCircle": 80.0,
+                    "BallRun": 80.0,
                     "CarCircle": 100.0, 
                     "CarRun": 40.0, 
                     "DroneCircle": 100.0, 
@@ -213,6 +223,8 @@ MAX_EPISODE_COST = {# bullet_safety_gym
 MIN_EPISODE_COST = {# bullet_safety_gym
                     "AntCircle": 0.0,
                     "AntRun": 0.0, 
+                    "BallCircle": 0.0,
+                    "BallRun": 0.0,
                     "CarCircle": 0.0, 
                     "CarRun": 0.0, 
                     "DroneCircle": 0.0, 

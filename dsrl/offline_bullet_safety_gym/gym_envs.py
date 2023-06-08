@@ -19,6 +19,22 @@ class AntRunEnv(EnvironmentBuilder):
         world = {"name": "Plane200", "factor": 1}
         super().__init__(agent, task, obstacles, world)
 
+class BallCircleEnv(EnvironmentBuilder):
+    def __init__(self):
+        agent = 'Ball'
+        task = 'CircleTask'
+        obstacles = {}
+        world = {'name': 'Octagon'}
+        super().__init__(agent, task, obstacles, world)
+
+class BallRunEnv(EnvironmentBuilder):
+    def __init__(self):
+        agent = 'Ball'
+        task = 'RunTask'
+        obstacles = {}
+        world = {'name': 'Plane200', 'factor': 1}
+        super().__init__(agent, task, obstacles, world)
+
 class CarCircleEnv(EnvironmentBuilder):
     def __init__(self):
         agent = "RaceCar"
@@ -61,6 +77,16 @@ class OfflineAntRunEnv(AntRunEnv, offline_env.OfflineEnv):
         AntRunEnv.__init__(self,)
         offline_env.OfflineEnv.__init__(self, **kwargs)
 
+class OfflineBallCircleEnv(BallCircleEnv, offline_env.OfflineEnv):
+    def __init__(self, **kwargs):
+        BallCircleEnv.__init__(self,)
+        offline_env.OfflineEnv.__init__(self, **kwargs)
+
+class OfflineBallRunEnv(BallRunEnv, offline_env.OfflineEnv):
+    def __init__(self, **kwargs):
+        BallRunEnv.__init__(self,)
+        offline_env.OfflineEnv.__init__(self, **kwargs)
+
 class OfflineCarCircleEnv(CarCircleEnv, offline_env.OfflineEnv):
     def __init__(self, **kwargs):
         CarCircleEnv.__init__(self,)
@@ -86,6 +112,12 @@ def get_AntCircle_env(**kwargs):
 
 def get_AntRun_env(**kwargs):
     return OfflineAntRunEnv(**kwargs)
+
+def get_BallCircle_env(**kwargs):
+    return OfflineBallCircleEnv(**kwargs)
+
+def get_BallRun_env(**kwargs):
+    return OfflineBallRunEnv(**kwargs)
 
 def get_CarCircle_env(**kwargs):
     return OfflineCarCircleEnv(**kwargs)
