@@ -336,15 +336,14 @@ class OfflineEnv(gym.Env):
         if inpaint_ranges is not None:
             inpainted_idx = []
             for inpaint_range in inpaint_ranges:
-                cmin, cmax = inpaint_range
-                mask = np.logical_and(
-                    cmin <= cost_returns[traj_idx], cost_returns[traj_idx] <= cmax
-                )
+                pcmin, pcmax, prmin, prmax = inpaint_range
+                cmask = np.logical_and((cmax - cmin) * pcmin + cmin <= cost_returns[traj_idx], 
+                                       cost_returns[traj_idx] <= (cmax - cmin) * pcmax + cmin)
+                rmask = np.logical_and((rmax - rmin) * prmin + rmin <= reward_returns[traj_idx], 
+                                       reward_returns[traj_idx] <= (rmax - rmin) * prmax + rmin)
+                mask = np.logical_and(cmask, rmask)
                 inpainted_idx.append(traj_idx[mask])
-                mask = np.logical_or(
-                    cost_returns[traj_idx] < cmin, cost_returns[traj_idx] > cmax
-                )
-                traj_idx = traj_idx[mask]
+                traj_idx = traj_idx[np.logical_not(mask)]
             inpainted_idx = np.array(inpainted_idx)
             # check if outliers are filtered
             if outliers_percent is not None:
