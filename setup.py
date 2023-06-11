@@ -3,7 +3,7 @@
 
 import os
 import sys
-
+import itertools
 from setuptools import find_packages, setup
 
 
@@ -14,14 +14,19 @@ def get_version() -> str:
 
 
 def get_install_requires() -> str:
-    return ['gym>=0.26.0', 'numpy', 'pybullet>=3.0.6']
+    return ['gym>=0.26.0', 'numpy', 'pybullet>=3.0.6', "bullet_safety_gym@git+https://github.com/SvenGronauer/Bullet-Safety-Gym.git@master"]
 
 
 def get_extras_require() -> str:
     req = {
-        "mujoco": ["git+https://github.com/PKU-Alignment/safety-gymnasium.git@main"],
-        "metadrive": ["pybullet"],
+        "mujoco": ["safety-gymnasium@git+https://github.com/PKU-Alignment/safety-gymnasium.git@main"],
+        "metadrive": ["metadrive-simulator@git+https://github.com/HenryLHH/metadrive_clean.git@main"],
     }
+    
+    all_groups = set(req.keys())
+    req["all"] = list(
+        set(itertools.chain.from_iterable(map(lambda group: req[group], all_groups)))
+    )
     return req
 
 
