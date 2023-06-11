@@ -3,7 +3,6 @@ import os
 
 import gym
 import dsrl.offline_metadrive
-from dsrl.infos import DATASET_URLS
 
 def get_parser(): 
     parser = argparse.ArgumentParser()
@@ -16,8 +15,8 @@ if __name__ == "__main__":
     args = get_parser().parse_args()
 
     # make environments    
-    env_name = args.road + args.vehicle
-    print("Environment {} loaded: ".format(env_name))
+    env_name = args.road + args.traffic
+    print("Environment {} loading...".format(env_name))
     
     id = f'OfflineMetadrive-{env_name}-v0'
     env = gym.make(id)
@@ -25,8 +24,8 @@ if __name__ == "__main__":
     
     # load dataset
     dataset = env.get_dataset()
-    print("loaded data status: ",  env.observation_space.contains(dataset["observation"]))
-
+    print("loaded data status: ",  env.observation_space.contains(dataset["observations"][0]))
+    env.reset()
     # interact with environment
     for _ in range(100): 
         obs, reward, terminal, truncate, info = env.step(env.action_space.sample())

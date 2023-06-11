@@ -1,9 +1,8 @@
 import argparse
 import os
 
-import gym
-import dsrl.offline_metadrive
-from dsrl.infos import DATASET_URLS
+import gymnasium as gym
+import dsrl.offline_safety_gymnasium
 
 def get_parser(): 
     parser = argparse.ArgumentParser()
@@ -17,16 +16,18 @@ if __name__ == "__main__":
 
     # make environments    
     env_name = args.agent + args.task
-    print("Environment {} loaded: ".format(env_name))
+    print("Environment {} loading...".format(env_name))
     
-    id = f'Offline{env_name}-v0'
+    id = f'Offline{env_name}Gymnasium-v0'
+    print(id)
     env = gym.make(id)
     
     # load dataset
     dataset = env.get_dataset()
-    print("loaded data status: ",  env.observation_space.contains(dataset["observation"]))
+    print("loaded data status: ",  env.observation_space.contains(dataset["observations"][0]))
 
     # interact with environment
+    env.reset()
     for _ in range(100): 
         obs, reward, terminal, truncate, info = env.step(env.action_space.sample())
     
