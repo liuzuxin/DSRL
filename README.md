@@ -41,7 +41,14 @@ Pull the repo and install:
 ```
 git clone https://github.com/liuzuxin/DSRL.git
 cd DSRL
+# install bullet safety_gym only (by default)
 pip install -e .
+# install mujoco safety_gym only
+pip install -e .[mujoco]
+# install metadrive only
+pip install -e .[metadrive]
+# install all in once
+pip install -e .[all]
 ```
 
 ## How to use DSRL
@@ -76,6 +83,14 @@ print(dataset['observations']) # An N x obs_dim Numpy array of observations
 ```
 
 Datasets are automatically downloaded to the `~/.dsrl/datasets` directory when `get_dataset()` is called. If you would like to change the location of this directory, you can set the `$DSRL_DATASET_DIR` environment variable to the directory of your choosing, or pass in the dataset filepath directly into the `get_dataset` method.
+
+You can use run the following example scripts to play with the offline dataset of all the supported environments: 
+
+``` bash
+python examples/run_mujoco.py --agent [your_agent] --task [your_task]
+python examples/run_bullet.py --agent [your_agent] --task [your_task]
+python examples/run_metadrive.py --road [your_road] --traffic [your_traffic] 
+```
 
 ### Normalizing Scores
 - Set target cost by using `env.set_target_cost(target_cost)` function, where `target_cost` is the undiscounted sum of costs of an episode
