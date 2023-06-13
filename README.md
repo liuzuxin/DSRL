@@ -65,14 +65,11 @@ DSRL uses the [OpenAI Gym](https://github.com/openai/gym) API. Tasks are created
 import gymnasium as gym
 import dsrl
 
-# set seed
-seed = 0
-
 # Create the environment
 env = gym.make('OfflineCarCircle-v0')
 
 # dsrl abides by the OpenAI gym interface
-obs, info = env.reset(seed=seed)
+obs, info = env.reset()
 obs, reward, terminal, timeout, info = env.step(env.action_space.sample())
 cost = info["cost"]
 
