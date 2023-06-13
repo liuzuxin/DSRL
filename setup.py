@@ -14,7 +14,7 @@ def get_version() -> str:
 
 
 def get_install_requires() -> str:
-    return ['gym>=0.26.0', 'numpy', 'pybullet>=3.0.6', "bullet_safety_gym@git+https://github.com/SvenGronauer/Bullet-Safety-Gym.git@master"]
+    return ['gym>=0.26.0', 'numpy', 'pybullet>=3.0.6', "bullet_safety_gym@git+https://github.com/liuzuxin/Bullet-Safety-Gym.git@master"]
 
 
 def get_extras_require() -> str:
