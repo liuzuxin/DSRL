@@ -68,15 +68,18 @@ import dsrl
 # Create the environment
 env = gym.make('OfflineCarCircle-v0')
 
+# Each task is associated with a dataset
+# dataset contains observations, next_observatiosn, actions, rewards, costs, terminals, timeouts
+dataset = env.get_dataset()
+print(dataset['observations']) # An N x obs_dim Numpy array of observations
+
 # dsrl abides by the OpenAI gym interface
 obs, info = env.reset()
 obs, reward, terminal, timeout, info = env.step(env.action_space.sample())
 cost = info["cost"]
 
-# Each task is associated with a dataset
-# dataset contains observations, next_observatiosn, actions, rewards, costs, terminals, timeouts
-dataset = env.get_dataset()
-print(dataset['observations']) # An N x obs_dim Numpy array of observations
+# Apply dataset filters [optional]
+# dataset = env.pre_process_data(dataset, filter_cfgs)
 ```
 
 Datasets are automatically downloaded to the `~/.dsrl/datasets` directory when `get_dataset()` is called. If you would like to change the location of this directory, you can set the `$DSRL_DATASET_DIR` environment variable to the directory of your choosing, or pass in the dataset filepath directly into the `get_dataset` method.
