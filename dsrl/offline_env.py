@@ -337,12 +337,16 @@ class OfflineEnv(gym.Env):
             inpainted_idx = []
             for inpaint_range in inpaint_ranges:
                 pcmin, pcmax, prmin, prmax = inpaint_range
-                cmask = np.logical_and((cmax - cmin) * pcmin + cmin <= cost_returns[traj_idx], 
-                                       cost_returns[traj_idx] <= (cmax - cmin) * pcmax + cmin)
+                cmask = np.logical_and(
+                    (cmax - cmin) * pcmin + cmin <= cost_returns[traj_idx],
+                    cost_returns[traj_idx] <= (cmax - cmin) * pcmax + cmin
+                )
                 rmin2 = np.min(reward_returns[traj_idx[cmask]])
                 rmax2 = np.max(reward_returns[traj_idx[cmask]])
-                rmask = np.logical_and((rmax2 - rmin2) * prmin + rmin2 <= reward_returns[traj_idx], 
-                                       reward_returns[traj_idx] <= (rmax2 - rmin2) * prmax + rmin2)
+                rmask = np.logical_and(
+                    (rmax2 - rmin2) * prmin + rmin2 <= reward_returns[traj_idx],
+                    reward_returns[traj_idx] <= (rmax2 - rmin2) * prmax + rmin2
+                )
                 mask = np.logical_and(cmask, rmask)
                 inpainted_idx.append(traj_idx[mask])
                 traj_idx = traj_idx[np.logical_not(mask)]

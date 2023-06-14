@@ -1,5 +1,5 @@
 <div align="center">
-  <a href="http://fsrl.readthedocs.io"><img width="300px" height="auto" src="docs/_static/images/dsrl-logo.png"></a>
+  <a href="http://www.offline-saferl.org"><img width="300px" height="auto" src="https://github.com/liuzuxin/dsrl/raw/main/docs/dsrl-logo.png"></a>
 </div>
 
 <br/>
@@ -8,15 +8,15 @@
 
   <a>![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-brightgreen.svg)</a>
   [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](#license)
+  [![PyPI](https://img.shields.io/pypi/v/dsrl?logo=pypi)](https://pypi.org/project/dsrl)
+  [![GitHub Repo Stars](https://img.shields.io/github/stars/liuzuxin/dsrl?color=brightgreen&logo=github)](https://github.com/liuzuxin/dsrl/stargazers)
+  <!-- [![Downloads](https://static.pepy.tech/personalized-badge/dsrl?period=total&left_color=grey&right_color=blue&left_text=downloads)](https://pepy.tech/project/dsrl) -->
   <!-- [![Documentation Status](https://img.shields.io/readthedocs/fsrl?logo=readthedocs)](https://fsrl.readthedocs.io) -->
   <!-- [![CodeCov](https://codecov.io/github/liuzuxin/fsrl/branch/main/graph/badge.svg?token=BU27LTW9F3)](https://codecov.io/github/liuzuxin/fsrl)
   [![Tests](https://github.com/liuzuxin/fsrl/actions/workflows/test.yml/badge.svg)](https://github.com/liuzuxin/fsrl/actions/workflows/test.yml) -->
   <!-- [![CodeCov](https://img.shields.io/codecov/c/github/liuzuxin/fsrl/main?logo=codecov)](https://app.codecov.io/gh/liuzuxin/fsrl) -->
   <!-- [![tests](https://img.shields.io/github/actions/workflow/status/liuzuxin/fsrl/test.yml?label=tests&logo=github)](https://github.com/liuzuxin/fsrl/tree/HEAD/tests) -->
-  <!-- [![PyPI](https://img.shields.io/pypi/v/fsrl?logo=pypi)](https://pypi.org/project/fsrl) -->
-  <!-- [![GitHub Repo Stars](https://img.shields.io/github/stars/liuzuxin/fsrl?color=brightgreen&logo=github)](https://github.com/liuzuxin/fsrl/stargazers)
-  [![Downloads](https://static.pepy.tech/personalized-badge/fsrl?period=total&left_color=grey&right_color=blue&left_text=downloads)](https://pepy.tech/project/fsrl) -->
-
+  
 </div>
 
 ---
@@ -29,30 +29,45 @@ DSRL provides:
 1. **Diverse datasets:** 38 datasets across different safe RL environments and difficulty levels in SafetyGymnasium, BulletSafetyGym, and MetaDrive, all prepared with safety considerations.
 2. **Consistent API with D4RL:** For easy use and evaluation of offline learning methods.
 3. **Data post-processing filters:** Allowing alteration of data density, noise level, and reward distributions to simulate various data collection conditions.
-4. **Expertly crafted safe policies:** Useful for the generation of high-quality datasets.
 
 This package is a part of a comprehensive benchmarking suite that includes [FSRL](https://github.com/liuzuxin/fsrl) and [OSRL](https://github.com/liuzuxin/osrl) and aims to promote advancements in the development and evaluation of safe learning algorithms.
 
-To learn more, please visit our [project website](http://www.offline-saferl.org) or refer to our [documentation](./docs).
+To learn more, please visit our [project website](http://www.offline-saferl.org).
+
+<!-- To learn more, please visit our [project website](http://www.offline-saferl.org) or refer to our [documentation](./docs). -->
 
 ## Installation
 
-Pull the repo and install:
+## Install from PyPI
+
+DSRL is currently hosted on [PyPI](https://pypi.org/project/dsrl), you can simply install it by:
+
+```bash
+pip install dsrl
 ```
+It will by default install `bullet-safety-gym` and `safety-gymnasium` environments automatically.
+
+If you want to use the `MetaDrive` environment, please install it via:
+```bash
+pip install git+https://github.com/HenryLHH/metadrive_clean.git@main
+```
+
+## Install from source
+
+Pull this repo and install:
+```bash
 git clone https://github.com/liuzuxin/DSRL.git
 cd DSRL
-# install bullet safety_gym only (by default)
 pip install -e .
-# install mujoco safety_gym only
-pip install -e .[mujoco]
-# install metadrive only
+```
+
+You can also install the `MetaDrive` package simply by specify the option:
+```bash
 pip install -e .[metadrive]
-# install all in once
-pip install -e .[all]
 ```
 
 ## How to use DSRL
-DSRL uses the [OpenAI Gym](https://github.com/openai/gym) API. Tasks are created via the `gym.make` function. Each task is associated with a fixed offline dataset, which can be obtained with the `env.get_dataset()` method. This method returns a dictionary with:
+DSRL uses the [Gymnasium](https://gymnasium.farama.org/) API. Tasks are created via the `gymnasium.make` function. Each task is associated with a fixed offline dataset, which can be obtained with the `env.get_dataset()` method. This method returns a dictionary with:
 - `observations`: An N × obs_dim array of observations.
 - `next_observations`: An N × obs_dim of next observations.
 - `actions`: An N × act_dim array of actions.
@@ -60,6 +75,8 @@ DSRL uses the [OpenAI Gym](https://github.com/openai/gym) API. Tasks are created
 - `costs`: An N dimensional array of costs.
 - `terminals`: An N dimensional array of episode termination flags. This is true when episodes end due to termination conditions such as falling over.
 - `timeouts`: An N dimensional array of termination flags. This is true when episodes end due to reaching the maximum episode length.
+
+The usage is similar to [D4RL](https://github.com/Farama-Foundation/D4RL). Here is an example code:
 
 ```python
 import gymnasium as gym

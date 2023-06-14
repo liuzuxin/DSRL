@@ -1,30 +1,27 @@
-import imp
 import os
-import os.path as osp
-import signal, sys
-import pprint
+import signal
+import sys
 from dataclasses import asdict, dataclass
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import bullet_safety_gym
-import safety_gymnasium
 import gymnasium as gym
 import numpy as np
 import pyrallis
+import safety_gymnasium
 import torch
 import torch.nn as nn
-from tianshou.data import VectorReplayBuffer, ReplayBuffer
-from tianshou.env import BaseVectorEnv, ShmemVectorEnv, SubprocVectorEnv
-from tianshou.utils.net.common import Net
-from tianshou.utils.net.continuous import ActorProb, Critic
-from torch.distributions import Independent, Normal
-
-from fsrl.data import FastCollector, BasicCollector, TrajectoryBuffer
+from fsrl.data import BasicCollector, FastCollector, TrajectoryBuffer
 from fsrl.policy import TRPOLagrangian
 from fsrl.trainer import OnpolicyTrainer
 from fsrl.utils import TensorboardLogger, WandbLogger
 from fsrl.utils.exp_util import auto_name, seed_all
 from fsrl.utils.net.common import ActorCritic
+from tianshou.data import ReplayBuffer, VectorReplayBuffer
+from tianshou.env import BaseVectorEnv, ShmemVectorEnv, SubprocVectorEnv
+from tianshou.utils.net.common import Net
+from tianshou.utils.net.continuous import ActorProb, Critic
+from torch.distributions import Independent, Normal
 
 
 @dataclass
@@ -89,17 +86,12 @@ class TrainCfg:
     verbose: bool = True
     render: bool = False
     # logger params
-    logdir: str = "logs-v1"
-    project: str = "dsrl-collect"
+    logdir: str = "logs"
+    project: str = "dsrl_expert"
     group: Optional[str] = None
     name: Optional[str] = None
     prefix: Optional[str] = "trpol"
-    suffix: Optional[str] = "v1"
-
-
-########################################################
-######## bullet-safety-gym task default configs ########
-########################################################
+    suffix: Optional[str] = ""
 
 
 @dataclass
@@ -430,71 +422,90 @@ class MujocoCarPush2Cfg(TrainCfg):
 @dataclass
 class MujocoHalfCheetahCfg(TrainCfg):
     task: str = "SafetyHalfCheetahVelocityGymnasium-v1"
-    cost_start: float = 300
+    cost_start: float = 250
     cost_end: float = 10
-    epoch_start: int = 300
-    epoch_end: int = 2500
+    epoch_start: int = 800
+    epoch_end: int = 2800
     epoch: int = 3000
     max_traj_len: int = 1500
     collect_in_train: bool = False
     testing_num: int = 2
     deterministic_eval: bool = False
+    rmin: float = 0
+    cmax: float = 250
+    gamma: float = 0.995
 
 
 @dataclass
 class MujocoHopperCfg(TrainCfg):
     task: str = "SafetyHopperVelocityGymnasium-v1"
-    cost_start: float = 300
+    cost_start: float = 250
     cost_end: float = 10
-    epoch_start: int = 400
+    epoch_start: int = 800
     epoch_end: int = 2500
     epoch: int = 3000
     max_traj_len: int = 1500
     collect_in_train: bool = False
     testing_num: int = 2
     deterministic_eval: bool = False
+    rmin: float = 0
+    cmax: float = 250
+    gamma: float = 0.995
 
 
 @dataclass
 class MujocoSwimmerCfg(TrainCfg):
     task: str = "SafetySwimmerVelocityGymnasium-v1"
-    cost_start: float = 300
+    cost_start: float = 200
     cost_end: float = 10
-    epoch_start: int = 500
+    epoch_start: int = 800
     epoch_end: int = 2500
     epoch: int = 3000
     max_traj_len: int = 1500
     collect_in_train: bool = False
     testing_num: int = 2
     deterministic_eval: bool = False
+    rmin: float = 0
+    cmax: float = 200
+    gamma: float = 0.995
 
 
 @dataclass
 class MujocoWalker2dCfg(TrainCfg):
     task: str = "SafetyWalker2dVelocityGymnasium-v1"
-    cost_start: float = 300
-    cost_end: float = 10
-    epoch_start: int = 600
-    epoch_end: int = 3000
-    epoch: int = 3500
+    cost_start: float = 10
+    cost_end: float = 300
+    epoch_start: int = 1500
+    epoch_end: int = 4000
+    epoch: int = 4200
     max_traj_len: int = 2000
     collect_in_train: bool = False
     testing_num: int = 2
     deterministic_eval: bool = False
+    hidden_sizes: Tuple[int, ...] = (256, 256)
+    last_layer_scale: bool = True
+    # PPO specific arguments
+    target_kl: float = 0.005
+    gamma: float = 0.995
+    rmin: float = 0
+    cmax: float = 250
 
 
 @dataclass
 class MujocoAntCfg(TrainCfg):
     task: str = "SafetyAntVelocityGymnasium-v1"
-    cost_start: float = 300
-    cost_end: float = 10
-    epoch_start: int = 700
+    cost_start: float = 20
+    cost_end: float = 300
+    epoch_start: int = 1000
     epoch_end: int = 3000
     epoch: int = 3500
+    hidden_sizes: Tuple[int, ...] = (256, 256)
     max_traj_len: int = 2000
     collect_in_train: bool = False
     testing_num: int = 2
     deterministic_eval: bool = False
+    rmin: float = 0
+    cmax: float = 250
 
 
 @dataclass
@@ -509,6 +520,10 @@ class MujocoHumanoidCfg(TrainCfg):
     collect_in_train: bool = False
     testing_num: int = 2
     deterministic_eval: bool = False
+    hidden_sizes: Tuple[int, ...] = (256, 256)
+    target_kl: float = 0.005
+    norm_adv: bool = False
+    unbounded = True
 
 
 TASK_TO_CFG = {
@@ -547,7 +562,7 @@ TASK_TO_CFG = {
 
 class ActorProbLargeVar(ActorProb):
 
-    SIGMA_MIN = -1
+    SIGMA_MIN = -3
     SIGMA_MAX = 2
 
     def forward(
@@ -562,9 +577,9 @@ class ActorProbLargeVar(ActorProb):
         if not self._unbounded:
             mu = self._max * torch.tanh(mu)
         if self._c_sigma:
-            sigma = torch.clamp(self.sigma(logits),
-                                min=self.SIGMA_MIN,
-                                max=self.SIGMA_MAX).exp()
+            sigma = torch.clamp(
+                self.sigma(logits), min=self.SIGMA_MIN, max=self.SIGMA_MAX
+            ).exp()
         else:
             shape = [1] * len(mu.shape)
             shape[1] = -1
@@ -601,10 +616,10 @@ def train(args: TrainCfg):
     if args.name is None:
         args.name = auto_name(default_cfg, cfg, args.prefix, args.suffix)
     if args.group is None:
-        args.group = args.task + "-cost-" + str(int(args.cost_start)) + "-" + str(
-            int(args.cost_end))
+        args.group = args.task + "-cost-" + str(int(args.cost_start)
+                                                ) + "-" + str(int(args.cost_end))
     if args.logdir is not None:
-        args.logdir = os.path.join(args.logdir, args.group, args.name)
+        args.logdir = os.path.join(args.logdir, args.group)
     logger = WandbLogger(cfg, args.project, args.group, args.name, args.logdir)
     #logger = TensorboardLogger(args.logdir, log_txt=True, name=args.name)
     logger.save_config(cfg, verbose=args.verbose)
@@ -616,14 +631,18 @@ def train(args: TrainCfg):
     max_action = env.action_space.high[0]
 
     net = Net(state_shape, hidden_sizes=args.hidden_sizes, device=args.device)
-    actor = ActorProbLargeVar(net,
-                              action_shape,
-                              max_action=max_action,
-                              unbounded=args.unbounded,
-                              device=args.device).to(args.device)
+    actor = ActorProbLargeVar(
+        net,
+        action_shape,
+        max_action=max_action,
+        unbounded=args.unbounded,
+        device=args.device
+    ).to(args.device)
     critic = [
-        Critic(Net(state_shape, hidden_sizes=args.hidden_sizes, device=args.device),
-               device=args.device).to(args.device) for _ in range(2)
+        Critic(
+            Net(state_shape, hidden_sizes=args.hidden_sizes, device=args.device),
+            device=args.device
+        ).to(args.device) for _ in range(2)
     ]
     torch.nn.init.constant_(actor.sigma_param, -0.5)
     actor_critic = ActorCritic(actor, critic)
@@ -645,43 +664,46 @@ def train(args: TrainCfg):
     def dist(*logits):
         return Independent(Normal(*logits), 1)
 
-    policy = TRPOLagrangian(actor,
-                            critic,
-                            optim,
-                            dist,
-                            logger=logger,
-                            target_kl=args.target_kl,
-                            backtrack_coeff=args.backtrack_coeff,
-                            max_backtracks=args.max_backtracks,
-                            optim_critic_iters=args.optim_critic_iters,
-                            gae_lambda=args.gae_lambda,
-                            advantage_normalization=args.norm_adv,
-                            use_lagrangian=args.use_lagrangian,
-                            lagrangian_pid=args.lagrangian_pid,
-                            cost_limit=args.cost_start,
-                            rescaling=args.rescaling,
-                            gamma=args.gamma,
-                            max_batchsize=args.max_batchsize,
-                            reward_normalization=args.rew_norm,
-                            deterministic_eval=args.deterministic_eval,
-                            action_scaling=args.action_scaling,
-                            action_bound_method=args.action_bound_method,
-                            observation_space=env.observation_space,
-                            action_space=env.action_space,
-                            lr_scheduler=None)
+    policy = TRPOLagrangian(
+        actor,
+        critic,
+        optim,
+        dist,
+        logger=logger,
+        target_kl=args.target_kl,
+        backtrack_coeff=args.backtrack_coeff,
+        max_backtracks=args.max_backtracks,
+        optim_critic_iters=args.optim_critic_iters,
+        gae_lambda=args.gae_lambda,
+        advantage_normalization=args.norm_adv,
+        use_lagrangian=args.use_lagrangian,
+        lagrangian_pid=args.lagrangian_pid,
+        cost_limit=args.cost_start,
+        rescaling=args.rescaling,
+        gamma=args.gamma,
+        max_batchsize=args.max_batchsize,
+        reward_normalization=args.rew_norm,
+        deterministic_eval=args.deterministic_eval,
+        action_scaling=args.action_scaling,
+        action_bound_method=args.action_bound_method,
+        observation_space=env.observation_space,
+        action_space=env.action_space,
+        lr_scheduler=None
+    )
 
     # collector
-    traj_buffer = TrajectoryBuffer(args.max_traj_len,
-                                   filter_interval=1.5,
-                                   rmin=args.rmin,
-                                   rmax=args.rmax,
-                                   cmin=args.cmin,
-                                   cmax=args.cmax)
+    traj_buffer = TrajectoryBuffer(
+        args.max_traj_len,
+        filter_interval=1.5,
+        rmin=args.rmin,
+        rmax=args.rmax,
+        cmin=args.cmin,
+        cmax=args.cmax
+    )
     if args.collect_in_train:
-        train_collector = BasicCollector(policy,
-                                         env,
-                                         ReplayBuffer(args.buffer_size),
-                                         traj_buffer=traj_buffer)
+        train_collector = BasicCollector(
+            policy, env, ReplayBuffer(args.buffer_size), traj_buffer=traj_buffer
+        )
     else:
         training_num = min(args.training_num, args.episode_per_collect)
         worker = eval(args.worker)
@@ -723,7 +745,7 @@ def train(args: TrainCfg):
     )
 
     def saving_dataset():
-        traj_buffer.save(args.logdir)
+        traj_buffer.save(logger.log_dir)
 
     def term_handler(signum, frame):
         print("Sig term handler, saving the dataset...")
@@ -737,8 +759,9 @@ def train(args: TrainCfg):
             # print(f"Epoch: {epoch}")
             # print(info)
             print(f"Trajs: {len(traj_buffer.buffer)}, transitions: {len(traj_buffer)}")
-            cost = cost_limit_scheduler(epoch, args.epoch_start, args.epoch_end,
-                                        args.cost_start, args.cost_end)
+            cost = cost_limit_scheduler(
+                epoch, args.epoch_start, args.epoch_end, args.cost_start, args.cost_end
+            )
             policy.update_cost_limit(cost)
             logger.store(tab="train", cost_limit=cost, epoch=epoch)
     except KeyboardInterrupt:

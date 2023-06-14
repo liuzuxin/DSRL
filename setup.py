@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
-import itertools
 from setuptools import find_packages, setup
 
 
@@ -14,19 +12,20 @@ def get_version() -> str:
 
 
 def get_install_requires() -> str:
-    return ['gym>=0.26.0', 'numpy', 'pybullet>=3.0.6', "bullet_safety_gym@git+https://github.com/liuzuxin/Bullet-Safety-Gym.git@master"]
+    return [
+        'gym>=0.26.0',
+        'pybullet>=3.0.6',
+        "bullet_safety_gym==1.4.0",
+        "safety-gymnasium==0.4.0",
+        'numpy',
+    ]
 
 
 def get_extras_require() -> str:
     req = {
-        "mujoco": ["safety-gymnasium@git+https://github.com/PKU-Alignment/safety-gymnasium.git@main"],
-        "metadrive": ["metadrive-simulator@git+https://github.com/HenryLHH/metadrive_clean.git@main"],
+        "metadrive":
+        ["metadrive-simulator@git+https://github.com/HenryLHH/metadrive_clean.git@main"],
     }
-    
-    all_groups = set(req.keys())
-    req["all"] = list(
-        set(itertools.chain.from_iterable(map(lambda group: req[group], all_groups)))
-    )
     return req
 
 
@@ -40,8 +39,24 @@ setup(
     author="DSRL contributors",
     author_email="zuxin1997@gmail.com",
     license="Apache",
-    python_requires=">=3.6",
-    keywords="offline safe reinforcement learning dataset",
+    python_requires=">=3.8",
+    classifiers=[
+        # How mature is this project? Common values are 3 - Alpha 4 - Beta 5 -
+        #   Production/Stable
+        "Development Status :: 3 - Alpha",
+        # Indicate who your project is intended for
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        # Pick your license as you wish (should match "license" above)
+        "License :: OSI Approved :: Apache Software License",
+        # Specify the Python versions you support here. In particular, ensure that you
+        # indicate whether you support Python 2, Python 3 or both.
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+    ],
+    keywords="datasets for offline safe reinforcement learning",
     packages=find_packages(
         exclude=["test", "test.*", "examples", "examples.*", "docs", "docs.*"]
     ),

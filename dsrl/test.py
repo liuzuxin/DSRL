@@ -15,4 +15,4 @@ cost = info["cost"]
 # Each task is associated with a dataset
 # dataset contains observations, next_observatiosn, actions, rewards, costs, terminals, timeouts
 dataset = env.get_dataset()
-print(dataset['observations']) # An N x obs_dim Numpy array of observations
+print(dataset['observations'])  # An N x obs_dim Numpy array of observations

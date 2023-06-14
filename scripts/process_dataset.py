@@ -8,7 +8,7 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import trange
-from dsrl.generation.common import get_trajectory_info, filter_trajectory, select_optimal_trajectory
+from .utils import get_trajectory_info, filter_trajectory
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -22,7 +22,6 @@ if __name__ == "__main__":
     parser.add_argument('--cbins', type=int, default=60)
     parser.add_argument('--rbins', type=int, default=50)
     parser.add_argument('--npb', type=int, default=1000)
-    parser.add_argument('--optimal', action="store_true")
     parser.add_argument('--save', action="store_true")
     args = parser.parse_args()
 
@@ -62,7 +61,7 @@ if __name__ == "__main__":
     print(f"Total number of trajectories: {len(traj)}")
 
     # plot the original dataset cost-reward figure
-    output_name = args.output + '_' + str(int(args.cmax))
+    output_name = args.output + '-' + str(int(args.cmax))
     plt.scatter(cost_ret, rew_ret)
     plt.xlabel("Costs")
     plt.ylabel("Rewards")
@@ -73,24 +72,18 @@ if __name__ == "__main__":
     plt.clf()
 
     # downsampling the trajectories by grid filter
-    if args.optimal:
-        cost_ret, rew_ret, traj = select_optimal_trajectory(cost_ret,
-                                                            rew_ret,
-                                                            traj,
-                                                            rmin=args.rmin,
-                                                            cost_bins=args.cbins,
-                                                            max_num_per_bin=args.npb)
-    else:
-        cost_ret, rew_ret, traj = filter_trajectory(cost_ret,
-                                                    rew_ret,
-                                                    traj,
-                                                    cost_min=args.cmin,
-                                                    cost_max=args.cmax,
-                                                    rew_min=args.rmin,
-                                                    rew_max=args.rmax,
-                                                    cost_bins=args.cbins,
-                                                    rew_bins=args.rbins,
-                                                    max_num_per_bin=args.npb)
+    cost_ret, rew_ret, traj = filter_trajectory(
+        cost_ret,
+        rew_ret,
+        traj,
+        cost_min=args.cmin,
+        cost_max=args.cmax,
+        rew_min=args.rmin,
+        rew_max=args.rmax,
+        cost_bins=args.cbins,
+        rew_bins=args.rbins,
+        max_num_per_bin=args.npb
+    )
 
     print(f"Num of trajectories after filtering: {len(traj)}")
 
