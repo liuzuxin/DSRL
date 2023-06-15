@@ -6,7 +6,6 @@ from collections import defaultdict
 from random import sample
 from typing import Tuple, Union
 
-# import gym
 import gymnasium as gym
 import h5py
 import numpy as np
@@ -261,7 +260,7 @@ class OfflineEnv(gym.Env):
         done_idx = np.where(
             (data_dict["terminals"] == 1) | (data_dict["timeouts"] == 1)
         )[0]
-        # print(done_idx)
+
         trajs, cost_returns, reward_returns = [], [], []
         for i in range(done_idx.shape[0]):
             start = 0 if i == 0 else done_idx[i - 1] + 1
@@ -273,34 +272,25 @@ class OfflineEnv(gym.Env):
             cost_returns.append(cost_return)
             reward_returns.append(reward_return)
 
-        cmin, cmax = np.min(cost_returns), np.max(cost_returns)
-        rmin, rmax = np.min(reward_returns), np.max(reward_returns)
-        print(f"rmax = {rmax}, rmin = {rmin}")
-        print(f"cmax = {cmax}, cmin = {cmin}")
         print(
             f"before filter: traj num = {len(trajs)}, transitions num = {data_dict['observations'].shape[0]}"
         )
+
         if density != 1.0:
             assert density < 1.0, "density should be less than 1.0"
-            cmin, cmax = np.min(cost_returns), np.max(cost_returns)
-            rmin, rmax = np.min(reward_returns), np.max(reward_returns)
-            # cbins, rbins = 10, 50
-            # max_npb, min_npb = 5, 2
             cost_returns, reward_returns, trajs, indices = filter_trajectory(
                 cost_returns,
                 reward_returns,
                 trajs,
-                cost_min=cmin,
-                cost_max=cmax,
-                rew_min=rmin,
-                rew_max=rmax,
+                cost_min=self.min_episode_cost,
+                cost_max=self.max_episode_cost,
+                rew_min=self.min_episode_reward,
+                rew_max=self.max_episode_reward,
                 cost_bins=cbins,
                 rew_bins=rbins,
                 max_num_per_bin=max_npb,
                 min_num_per_bin=min_npb
             )
-            # reward_returns = np.array(reward_returns, dtype=np.float64)
-            # cost_returns = np.array(cost_returns, dtype=np.float64)
         print(f"after filter: traj num = {len(trajs)}")
 
         n_trajs = len(trajs)
@@ -338,9 +328,8 @@ class OfflineEnv(gym.Env):
             for inpaint_range in inpaint_ranges:
                 pcmin, pcmax, prmin, prmax = inpaint_range
                 cmask = np.logical_and(
-                    (cmax - cmin) * pcmin + cmin <= cost_returns[traj_idx],
-                    cost_returns[traj_idx] <= (cmax - cmin) * pcmax + cmin
-                )
+                    (self.max_episode_cost - self.min_episode_cost) * pcmin + self.min_episode_cost <= cost_returns[traj_idx], 
+                     cost_returns[traj_idx] <= (self.max_episode_cost - self.min_episode_cost) * pcmax + self.min_episode_cost)
                 rmin2 = np.min(reward_returns[traj_idx[cmask]])
                 rmax2 = np.max(reward_returns[traj_idx[cmask]])
                 rmask = np.logical_and(
