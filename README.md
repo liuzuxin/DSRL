@@ -24,6 +24,10 @@
 
 **DSRL (Datasets for Safe Reinforcement Learning)** provides a rich collection of datasets specifically designed for offline Safe Reinforcement Learning (RL). Created with the objective of fostering progress in offline safe RL research, DSRL bridges a crucial gap in the availability of safety-centric public benchmarks and datasets. 
 
+<div align="center">
+  <img width="800px" height="auto" src="https://github.com/liuzuxin/dsrl/raw/main/docs/tasks.png">
+</div>
+
 DSRL provides:
 
 1. **Diverse datasets:** 38 datasets across different safe RL environments and difficulty levels in [SafetyGymnasium](https://github.com/PKU-Alignment/safety-gymnasium), [BulletSafetyGym](https://github.com/liuzuxin/Bullet-Safety-Gym), and [MetaDrive](https://github.com/HenryLHH/metadrive_clean), all prepared with safety considerations.
@@ -32,15 +36,11 @@ DSRL provides:
 
 This package is a part of a comprehensive benchmarking suite that includes [FSRL](https://github.com/liuzuxin/fsrl) and [OSRL](https://github.com/liuzuxin/osrl) and aims to promote advancements in the development and evaluation of safe learning algorithms.
 
+We provided a detailed breakdown of the datasets, including all the environments we use, the dataset sizes, and the cost-reward-return plot for each dataset. These details can be found in the [docs](https://github.com/liuzuxin/DSRL/tree/main/docs) folder.
+
 To learn more, please visit our [project website](http://www.offline-saferl.org).
 
 <!-- To learn more, please visit our [project website](http://www.offline-saferl.org) or refer to our [documentation](./docs). -->
-
-<div align="center">
-  <img width="600px" height="auto" src="https://github.com/liuzuxin/dsrl/docs/tasks.png">
-</div>
-
-We provided a detailed breakdown of the datasets, including all the environments we use, the dataset sizes, and the cost-reward-return plot for each dataset. These details could be found at the [docs](https://github.com/liuzuxin/dsrl/docs/README.md) folder.
 
 ## Installation
 
