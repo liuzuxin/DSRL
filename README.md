@@ -10,7 +10,7 @@
   [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](#license)
   [![PyPI](https://img.shields.io/pypi/v/dsrl?logo=pypi)](https://pypi.org/project/dsrl)
   [![GitHub Repo Stars](https://img.shields.io/github/stars/liuzuxin/dsrl?color=brightgreen&logo=github)](https://github.com/liuzuxin/dsrl/stargazers)
-  <!-- [![Downloads](https://static.pepy.tech/personalized-badge/dsrl?period=total&left_color=grey&right_color=blue&left_text=downloads)](https://pepy.tech/project/dsrl) -->
+  [![Downloads](https://static.pepy.tech/personalized-badge/dsrl?period=total&left_color=grey&right_color=blue&left_text=downloads)](https://pepy.tech/project/dsrl)
   <!-- [![Documentation Status](https://img.shields.io/readthedocs/fsrl?logo=readthedocs)](https://fsrl.readthedocs.io) -->
   <!-- [![CodeCov](https://codecov.io/github/liuzuxin/fsrl/branch/main/graph/badge.svg?token=BU27LTW9F3)](https://codecov.io/github/liuzuxin/fsrl)
   [![Tests](https://github.com/liuzuxin/fsrl/actions/workflows/test.yml/badge.svg)](https://github.com/liuzuxin/fsrl/actions/workflows/test.yml) -->
@@ -26,7 +26,7 @@
 
 DSRL provides:
 
-1. **Diverse datasets:** 38 datasets across different safe RL environments and difficulty levels in SafetyGymnasium, BulletSafetyGym, and MetaDrive, all prepared with safety considerations.
+1. **Diverse datasets:** 38 datasets across different safe RL environments and difficulty levels in [SafetyGymnasium](https://github.com/PKU-Alignment/safety-gymnasium), [BulletSafetyGym](https://github.com/liuzuxin/Bullet-Safety-Gym), and [MetaDrive](https://github.com/HenryLHH/metadrive_clean), all prepared with safety considerations.
 2. **Consistent API with D4RL:** For easy use and evaluation of offline learning methods.
 3. **Data post-processing filters:** Allowing alteration of data density, noise level, and reward distributions to simulate various data collection conditions.
 
@@ -35,6 +35,12 @@ This package is a part of a comprehensive benchmarking suite that includes [FSRL
 To learn more, please visit our [project website](http://www.offline-saferl.org).
 
 <!-- To learn more, please visit our [project website](http://www.offline-saferl.org) or refer to our [documentation](./docs). -->
+
+<div align="center">
+  <img width="600px" height="auto" src="https://github.com/liuzuxin/dsrl/docs/tasks.png">
+</div>
+
+We provided a detailed breakdown of the datasets, including all the environments we use, the dataset sizes, and the cost-reward-return plot for each dataset. These details could be found at the [docs](https://github.com/liuzuxin/dsrl/docs/README.md) folder.
 
 ## Installation
 
