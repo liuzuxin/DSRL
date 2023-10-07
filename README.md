@@ -38,7 +38,15 @@ This package is a part of a comprehensive benchmarking suite that includes [FSRL
 
 We provided a detailed breakdown of the datasets, including all the environments we use, the dataset sizes, and the cost-reward-return plot for each dataset. These details can be found in the [docs](https://github.com/liuzuxin/DSRL/tree/main/docs) folder.
 
-To learn more, please visit our [project website](http://www.offline-saferl.org).
+To learn more, please visit our [project website](http://www.offline-saferl.org). If you find this code useful, please cite:
+```bibtex
+@article{liu2023datasets,
+  title={Datasets and Benchmarks for Offline Safe Reinforcement Learning},
+  author={Liu, Zuxin and Guo, Zijian and Lin, Haohong and Yao, Yihang and Zhu, Jiacheng and Cen, Zhepeng and Hu, Hanjiang and Yu, Wenhao and Zhang, Tingnan and Tan, Jie and others},
+  journal={arXiv preprint arXiv:2306.09303},
+  year={2023}
+}
+```
 
 <!-- To learn more, please visit our [project website](http://www.offline-saferl.org) or refer to our [documentation](./docs). -->
 
