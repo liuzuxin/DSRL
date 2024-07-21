@@ -12,7 +12,9 @@ def get_parser():
     parser.add_argument(
         "--traffic", type=str, default="sparse", help="traffic = [sparse, mean, dense]"
     )
-
+    parser.add_argument(
+        "--render", type=str, default="none", help="render = [none, 3pv, bev]"
+    )
     return parser
 
 
@@ -25,7 +27,9 @@ if __name__ == "__main__":
 
     id = f'OfflineMetadrive-{env_name}-v0'
     env = gym.make(id)
-
+    # if you want to render, set use_render to True
+    if args.render == '3pv': 
+        env.config['use_render'] = True
     # load dataset
     dataset = env.get_dataset()
     print(
@@ -35,7 +39,10 @@ if __name__ == "__main__":
     obs, info = env.reset()
 
     # interact with environment
-    for _ in range(100):
+    for _ in range(1000):
         obs, reward, terminal, truncate, info = env.step(env.action_space.sample())
-
+        if args.render == '3pv': 
+            env.render()
+        elif args.render == 'bev':
+            env.render(mode="top_down", film_size=(800, 800))
     print("done")

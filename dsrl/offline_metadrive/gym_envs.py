@@ -15,7 +15,7 @@ class SafeMetaDriveEnv_FSRL(SafeMetaDriveEnv):
                 "idm_deacc_factor": 5.0, 
                 "crash_vehicle_penalty": 0.0,
                 "random_traffic": True,
-                "traffic_mode": TrafficMode.Hybrid
+                "traffic_mode": TrafficMode.Hybrid, 
             },
             allow_add_new_key=True
         )
