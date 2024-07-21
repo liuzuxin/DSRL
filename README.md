@@ -123,6 +123,13 @@ python examples/run_bullet.py --agent [your_agent] --task [your_task]
 python examples/run_metadrive.py --road [your_road] --traffic [your_traffic] 
 ```
 
+We also add examples of rendering in the Metadrive environments for both third-person view and birds-eye-view: 
+
+```bash
+python examples/run_metadrive.py --road [your_road] --traffic [your_traffic] --render [bev/3pv/none]
+```
+
+
 ### Normalizing Scores
 - Set target cost by using `env.set_target_cost(target_cost)` function, where `target_cost` is the undiscounted sum of costs of an episode
 - You can use the `env.get_normalized_score(return, cost_return)` function to compute a normalized reward and cost for an episode, where `returns` and `cost_returns` are the undiscounted sum of rewards and costs respectively of an episode. 
